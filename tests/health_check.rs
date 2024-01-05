@@ -3,7 +3,7 @@ use std::net::TcpListener;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 
-use zero2prod::configuration::{DatabaseSettings, get_configuration};
+use zero2prod::configuration::{get_configuration, DatabaseSettings};
 use zero2prod::startup::run;
 
 pub struct TestApp {
@@ -13,13 +13,11 @@ pub struct TestApp {
 
 /// Spawn app spins up the app on a random port to use for integration testing.
 async fn spawn_app() -> TestApp {
-    let listener = TcpListener::bind("127.0.0.1:0")
-        .expect("Failed to bind to a random port.");
+    let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to a random port.");
     let port = listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);
 
-    let mut configuration = get_configuration()
-        .expect("Failed to read configuration.");
+    let mut configuration = get_configuration().expect("Failed to read configuration.");
     // randomize the database name here for testing
     configuration.database.database_name = Uuid::new_v4().to_string();
 
@@ -36,9 +34,8 @@ async fn spawn_app() -> TestApp {
 
 pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
     // Create the database
-    let mut connection = PgConnection::connect(
-        &config.connection_string_without_db()
-    ).await
+    let mut connection = PgConnection::connect(&config.connection_string_without_db())
+        .await
         .expect("Failed to connect to Postgres.");
 
     connection
@@ -120,7 +117,8 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
         assert_eq!(
             400,
             response.status().as_u16(),
-            "The API did not fail with 400 Bad Request when the payload was {}", error_message
+            "The API did not fail with 400 Bad Request when the payload was {}",
+            error_message
         );
     }
 }
